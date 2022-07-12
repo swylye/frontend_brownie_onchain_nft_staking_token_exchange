@@ -141,7 +141,6 @@ export default function Home() {
                         id="outlined-required"
                         label="Swap amount"
                         type="number"
-                        onChange={(e) => setSwapAmount(e.target.value || "0")}
                         onChange={async (e) => {
                             if (e.target.value) {
                                 setSwapAmount(e.target.value || "0")
