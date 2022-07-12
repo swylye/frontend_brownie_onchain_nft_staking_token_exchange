@@ -27,7 +27,7 @@ export default function Home() {
   // loading is set to true when we are waiting for a transaction to get mined
   const [loading, setLoading] = useState(false);
   // nftMaxSupply keeps track of the NFT collection max supply
-  const [nftMaxSupply, setNftMaxSupply] = useState("");
+  const [nftMaxSupply, setNftMaxSupply] = useState("0");
   // nftMintPrice keeps track of the NFT mint price
   const [nftMintPrice, setNftMintPrice] = useState("0");
   // nftMinted keeps track of how many NFTs were minted
@@ -247,10 +247,10 @@ export default function Home() {
         <div className={styles.main}>
           <h1 className={styles.title}>Welcome fellow stranger on the internet!</h1>
           <div className={styles.description}>
-            Come get your very own randomly generated SVG NFT, all for a cheap price of {utils.formatEther(nftMintPrice)} ether!
+            Come get your very own randomly generated SVG NFT, all for a cheap price of {nftMintPrice == "0" ? "0.05" : utils.formatEther(nftMintPrice)} ether!
           </div>
           <div className={styles.description}>
-            {nftMinted}/{nftMaxSupply} have been minted
+            {nftMinted}/{nftMaxSupply == "0" ? "500" : nftMaxSupply} have been minted
           </div>
           <div className={styles.description}>
             You have minted {userNftMinted} random NFTs so far
