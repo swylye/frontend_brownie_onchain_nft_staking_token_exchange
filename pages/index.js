@@ -4,22 +4,10 @@ import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import styles from "../styles/Home.module.css";
 import { getNftContractInstance, getStakingContractInstance } from "../utils/helperFunctions"
-import ResponsiveAppBar from "../utils/responsiveAppBar"
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
-
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+
 
 export default function Home() {
   // walletConnected keep track of whether the user's wallet is connected or not
@@ -237,7 +225,6 @@ export default function Home() {
 
   return (
     <div>
-      {ResponsiveAppBar()}
       <Head>
         <title>Random SVG NFT</title>
         <meta name="description" content="random-svg-nft" />
@@ -258,10 +245,6 @@ export default function Home() {
           {renderButton()}
         </div>
       </Container>
-
-      <footer className={styles.footer}>
-        Made with &#10084; by SL
-      </footer>
     </div>
   );
 }

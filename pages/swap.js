@@ -4,26 +4,11 @@ import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import styles from "../styles/Home.module.css";
 import { getNftContractInstance, getStakingContractInstance, getExchangeContractInstance } from "../utils/helperFunctions"
-import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
-import ResponsiveAppBar from "../utils/responsiveAppBar"
 import { EXCHANGE_CONTRACT_ADDRESS } from "../constants";
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -44,15 +29,27 @@ export default function Home() {
             setSwapDirectionEthToToken("true");
         }
         setSwapDirectionEthToToken(newSwapDirection);
-        const swapAmountWei = utils.parseEther(swapAmount).toString();
-        const swapReturnAmountWei = await getSwapReturnAmount(swapAmountWei, swapDirectionEthToToken);
-        setSwapReceiveAmount(swapReturnAmountWei);
     };
 
     const [swapReceiveAmount, setSwapReceiveAmount] = useState(zero);
 
     // From user input, so these would be in ETH (not wei). Conversion needed before passing them into function
     const [swapAmount, setSwapAmount] = useState("0");
+
+    useEffect(() => {
+        if (Number(swapAmount) > 0) {
+            const swapAmountWei = utils.parseEther(swapAmount).toString();
+            const calculateSwapReturnAmmount = async () => {
+                const swapReturnAmountWei = await getSwapReturnAmount(swapAmountWei, swapDirectionEthToToken);
+                setSwapReceiveAmount(swapReturnAmountWei)
+            };
+            calculateSwapReturnAmmount();
+        }
+        else {
+            setSwapReceiveAmount(zero)
+        }
+
+    }, [swapAmount, swapDirectionEthToToken])
 
 
     // ============================================================== 
@@ -144,9 +141,6 @@ export default function Home() {
                         onChange={async (e) => {
                             if (e.target.value) {
                                 setSwapAmount(e.target.value || "0")
-                                const swapAmountWei = utils.parseEther(e.target.value).toString()
-                                const swapReturnAmountWei = await getSwapReturnAmount(swapAmountWei, swapDirectionEthToToken)
-                                setSwapReceiveAmount(swapReturnAmountWei)
                             }
                         }}
                         defaultValue="0"
@@ -232,7 +226,6 @@ export default function Home() {
                 disableInjectedProvider: false,
             });
             connectWallet();
-            // getBalances();
 
             // // // set an interval to run these every 5 seconds
             // setInterval(async function () {
@@ -243,7 +236,6 @@ export default function Home() {
 
     return (
         <div>
-            {ResponsiveAppBar()}
             <Head>
                 <title>Random SVG NFT provide liquidity</title>
                 <meta name="description" content="random-svg-nft-provide-liquidity" />
@@ -255,10 +247,6 @@ export default function Home() {
                     {renderSwap()}
                 </div>
             </Container >
-
-            <footer className={styles.footer}>
-                Made with &#10084; by SL
-            </footer>
         </div >
     );
 }
