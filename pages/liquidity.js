@@ -25,11 +25,11 @@ export default function Home() {
 
     const zero = BigNumber.from(0);
 
-    const [userEthBalance, setUserEthBalance] = useState(BigNumber.from(0));
-    const [userTokenBalance, setUserTokenBalance] = useState(BigNumber.from(0));
-    const [userLpBalance, setUserLpBalance] = useState(BigNumber.from(0));
-    const [contractEthReserve, setContractEthReserve] = useState(BigNumber.from(0));
-    const [contractTokenReserve, setContractTokenReserve] = useState(BigNumber.from(0));
+    const [userEthBalance, setUserEthBalance] = useState(zero);
+    const [userTokenBalance, setUserTokenBalance] = useState(zero);
+    const [userLpBalance, setUserLpBalance] = useState(zero);
+    const [contractEthReserve, setContractEthReserve] = useState(zero);
+    const [contractTokenReserve, setContractTokenReserve] = useState(zero);
 
     // If from user input, these would be in ETH (not wei), so conversion needed before passing them into function
     const [addEthAmount, setAddEthAmount] = useState("0");
@@ -37,8 +37,8 @@ export default function Home() {
     const [addTokenAmountWei, setAddTokenAmountWei] = useState("0");
     const [removeLpAmount, setRemoveLpAmount] = useState("0");
 
-    const [ethReturnAmount, setEthReturnAmount] = useState(BigNumber.from(0));
-    const [tokenReturnAmount, setTokenReturnAmount] = useState(BigNumber.from(0));
+    const [ethReturnAmount, setEthReturnAmount] = useState(zero);
+    const [tokenReturnAmount, setTokenReturnAmount] = useState(zero);
 
 
     // ============================================================== 
@@ -80,10 +80,10 @@ export default function Home() {
             const exchangeContract = getExchangeContractInstance(provider);
             const removeLpAmountWei = utils.parseEther(removeLpAmount);
             const lpTokenSupply = await exchangeContract.totalSupply();
-            const ethReturnAmount = removeLpAmountWei.mul(contractEthReserve).div(lpTokenSupply);
-            const tokenReturnAmount = removeLpAmountWei.mul(contractTokenReserve).div(lpTokenSupply);
-            setEthReturnAmount(ethReturnAmount);
-            setTokenReturnAmount(tokenReturnAmount);
+            const calEthReturnAmount = removeLpAmountWei.mul(contractEthReserve).div(lpTokenSupply);
+            const calTokenReturnAmount = removeLpAmountWei.mul(contractTokenReserve).div(lpTokenSupply);
+            setEthReturnAmount(calEthReturnAmount);
+            setTokenReturnAmount(calTokenReturnAmount);
         } catch (err) {
             console.error(err);
         }
@@ -216,6 +216,30 @@ export default function Home() {
         );
     }
 
+
+    <div>
+        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+            <TextField
+                required
+                id="outlined-required"
+                label="ETH Amount"
+                type="number"
+                onChange={async (e) => {
+                    setAddEthAmount(e.target.value || "0")
+                    const _tokenAmountWei = await tokenAmountToAddPL(e.target.value || "0")
+                    setAddTokenAmountWei(_tokenAmountWei)
+                }}
+                defaultValue="0"
+            />
+        </FormControl>
+        <FormControl sx={{ m: 3, minWidth: 120 }} size="small">
+            <LoadingButton onClick={approveAndAddLiquidity} loading={loading} loadingIndicator="Loading.." variant="contained" width="fit-content" disabled={userEthBalance <= 0 || userTokenBalance <= 0 ? true : false}>
+                Provide liquidity! 💧
+            </LoadingButton>
+        </FormControl>
+    </div>
+
+
     const renderRemoveLiquidity = () => {
         return (
             <Box
@@ -236,7 +260,6 @@ export default function Home() {
                             onChange={async (e) => {
                                 if (e.target.value) {
                                     setRemoveLpAmount(e.target.value || "0")
-                                    await tokenAmountAfterRemoval()
                                 }
                             }}
                             defaultValue="0"
@@ -252,7 +275,7 @@ export default function Home() {
                     >
                         {ethReturnAmount > 0 || tokenReturnAmount > 0 ?
                             <div> You would receive {utils.formatEther(ethReturnAmount.sub(ethReturnAmount.mod(1e15)))} of ether(s) and {utils.formatEther(tokenReturnAmount.sub(tokenReturnAmount.mod(1e15)))} of reward token(s) back! </div>
-                            : <hr />}
+                            : <div></div>}
                     </Box>
                     <FormControl sx={{ m: 3, minWidth: 120 }} size="small">
                         <LoadingButton onClick={removeLiquidity} loading={loading} loadingIndicator="Loading.." variant="contained" width="fit-content" disabled={userLpBalance < 0.02 ? true : false}>
@@ -305,8 +328,16 @@ export default function Home() {
         }
     };
 
-
-
+    // update eth and token amount to be received whenever removal amount get's updated
+    useEffect(() => {
+        if (Number(removeLpAmount) > 0) {
+            tokenAmountAfterRemoval()
+        }
+        else {
+            setEthReturnAmount(zero);
+            setTokenReturnAmount(zero);
+        }
+    }, [removeLpAmount])
 
     // useEffects are used to react to changes in state of the website
     // The array at the end of function call represents what state changes will trigger this effect
@@ -327,7 +358,6 @@ export default function Home() {
             // // set an interval to run these every 5 seconds
             setInterval(async function () {
                 await getBalances();
-                await tokenAmountAfterRemoval();
             }, 5 * 1000);
         }
     }, [walletConnected]);
